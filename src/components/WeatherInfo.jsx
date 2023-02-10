@@ -1,23 +1,43 @@
-import Form from 'react-bootstrap/Form';
 import { Row } from 'react-bootstrap';
-import { Search } from 'react-bootstrap-icons';
 import { Button } from 'react-bootstrap';
-import { FormControl } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import { useEffect, useState } from 'react';
+import { PlusLg } from 'react-bootstrap-icons';
+import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
+import { Trash } from 'react-bootstrap-icons';
 
 
 
 const WeatherInfo = ({ location }) => {
 
 
-    const [weatherInfo, setWeatherInfo] = useState(null)
+    const [weatherInfos, setWeatherInfo] = useState([])
+    const [inputValue, setInputValue] = useState('');
+    const handleChange = (event) => {
+        setInputValue(event.target.value);
+    };
 
 
-    const getGeo = async () => {
+    const removeItem = (index) => {
+        const newWeatherInfos = [...weatherInfos];
+        newWeatherInfos.splice(index, 1);
+        setWeatherInfo(newWeatherInfos);
+    };
+
+
+
+
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+
+
+    const getGeo = async (currentLoc = location) => {
         try {
-            const res = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=5&appid=05833546db38c472f354ec08859e52c7`)
+            const res = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${currentLoc}&limit=5&appid=05833546db38c472f354ec08859e52c7`)
             const data = await res.json()
             if (res.ok) {
 
@@ -38,7 +58,7 @@ const WeatherInfo = ({ location }) => {
             const data = await res.json()
 
             if (res.ok) {
-                setWeatherInfo(data)
+                setWeatherInfo(weatherInfos.concat(data))
             }
 
         } catch (error) {
@@ -78,47 +98,77 @@ const WeatherInfo = ({ location }) => {
     }
 
 
-
     useEffect(() => {
         getGeo()
     }, [])
 
 
 
+    const addLocation = (location) => {
+        getGeo(location)
+    }
+
+
+
     return (
         <>
-            {console.log('here', weatherInfo)}
-            {weatherInfo !== null && (
+            {console.log('here', weatherInfos)}
+            {weatherInfos[0] !== null && (
 
                 <>
-                    <h1 className='mb-5'>Today's weather for {location}</h1>
-                    <Row className='justify-content-center'>
-                        <Card style={{ width: '30rem' }} className="weather-card">
-                            <Card.Img variant="top" className='weather-img' src={getImg(weatherInfo.clouds.all, kelvinToCelsius(weatherInfo.main.temp_max))} />
-                            <Card.Body>
-                                <Card.Text className='text-left'>
-                                    <p>Weather: {weatherInfo.weather[0].description}</p>
-                                    <p>Temperature Max: {kelvinToCelsius(weatherInfo.main.temp_max)}°C</p>
-                                    <p>Temperature Min: {kelvinToCelsius(weatherInfo.main.temp_min)}°C</p>
-                                </Card.Text>
-                                <Link to="/">
-                                    <Button variant="primary">Change Location</Button>
-                                </Link>
-                            </Card.Body>
-                        </Card>
+
+                    <Row className='justify-content-center align-items-center mt-5'>
+                        {weatherInfos.map((weatherInfo) => {
+                            return (
+
+                                <Card style={{ width: '15rem' }} className="weather-card mt-5 mr-3">
+                                    <h3 className='mt-4'>Today's weather for {weatherInfo.name}</h3>
+                                    <Card.Img variant="top" className='weather-img' src={getImg(weatherInfo.clouds.all, kelvinToCelsius(weatherInfo.main.temp_max))} />
+                                    <Card.Body>
+                                        <Card.Text className='text-left'>
+                                            <p><b>Weather:</b> {weatherInfo.weather[0].description}</p>
+                                            <p><b>Temperature Max: </b>{kelvinToCelsius(weatherInfo.main.temp_max)}°C</p>
+                                            <p><b>Temperature Min:</b> {kelvinToCelsius(weatherInfo.main.temp_min)}°C</p>
+                                        </Card.Text>
+                                        <Link to="/">
+                                            <Button variant="danger" onClick={'test'} ><Trash size={30}></Trash></Button>
+                                        </Link>
+                                    </Card.Body>
+                                </Card>
+                            )
+                        })}
+                        <PlusLg className='add-weather' onClick={handleShow}></PlusLg>
+
+                        <Modal show={show} onHide={handleClose}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>Add a location</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                <Form>
+                                    <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                                        <Form.Control
+                                            type="text"
+                                            placeholder="location"
+                                            value={inputValue}
+                                            onChange={handleChange}
+                                            autoFocus
+                                        />
+                                    </Form.Group>
+                                </Form>
+                            </Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="primary" onClick={() => {
+                                    handleClose();
+                                    addLocation(inputValue);
+                                }}>
+                                    Add
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
                     </Row>
-
                 </>
-
-
             )
-
-
-
-
             }
-
-
         </>
 
     )

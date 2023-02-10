@@ -43,5 +43,19 @@
 }
 
 .weather-card {
-  box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+.add-weather {
+  font-size: 100px;
+  margin-left: 40px;
+  background-color: rgb(65, 185, 32);
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+.add-weather:hover {
+  background-color: rgb(49, 149, 22);
 }
